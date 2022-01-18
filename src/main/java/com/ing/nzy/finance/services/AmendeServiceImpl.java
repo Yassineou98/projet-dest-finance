@@ -52,14 +52,13 @@ public class AmendeServiceImpl implements AmendeService {
         amendeRepository
                 .findAll()
                 .stream()
-                .filter(amende -> !amende.getPayee() && amende.getDateEcheance().isAfter(LocalDate.MIN))
+                .filter(amende -> !amende.getPayee() && amende.getDateEcheance().isAfter(LocalDate.now()))
                 .forEach(amende -> {
                    // envoyer message au ministere de l'interieur pour creer un avis de recherche
                     jmsTemplate.convertAndSend(MessageQueueConfiguration.CREATION_RECHERCHE_TOPIC,
                             RechercheCreationEvent.builder()
                                     .amendeDto(amendeConverter.amendeToAmendDto(amende))
                                     .build());
-                    System.err.println(amendeConverter.amendeToAmendDto(amende));
                     log.debug("Sent Jms Message With Cin {}", amende.getPersonCin());
                 });
     }
